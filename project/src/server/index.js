@@ -30,14 +30,16 @@ app.get("/apod", async (req, res) => {
 });
 
 app.get("/mrp/:rover/:camera", async (req, res) => {
+  console.log(
+    `https://api.nasa.gov/mars-photos/api/v1/rovers/${req.params.rover}/photos?sol=1000&camera=${req.params.camera}&api_key=${process.env.API_KEY}`
+  );
   try {
-    // let image = await fetch(
-    //   // `https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
-    //   `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=${process.env.API_KEY}`
-    // ).then((res) => res.json());
-    // res.send({ image });
-    console.log("req.params  ", req.params);
-    // console.log();
+    let image = await fetch(
+      `https://api.nasa.gov/mars-photos/api/v1/rovers/${req.params.rover}/photos?sol=1000&camera=${req.params.camera}&api_key=${process.env.API_KEY}`
+    ).then((res) => res.json());
+    console.log("image is ");
+    console.log(image);
+    res.send({ image });
   } catch (err) {
     console.log("error:", err);
   }

@@ -1,6 +1,7 @@
 let store = {
   user: { name: "Student" },
   apod: "",
+  photosArr: [],
   rovers: ["Curiosity", "Opportunity", "Spirit"],
   cameras: {
     Curiosity: [
@@ -33,12 +34,17 @@ let store = {
 const root = document.getElementById("root");
 
 const updateStore = (store, newState) => {
+  console.log("new state is ");
+  console.log(newState);
   store = Object.assign(store, newState);
+  console.log("store is ");
+  console.log(store);
   render(root, store);
 };
 
 const render = async (root, state) => {
   root.innerHTML = App(state);
+  displayPhotos();
 };
 
 // create content
@@ -60,10 +66,8 @@ const App = (state) => {
               <input type="submit" value="Submit"> 
             </form>
           </div>
-          <section>
-              ${getRoverPhoto("Curiosity", "fhac")}
-          </section>
-
+          <div id="photos">
+          </div>
         </main>
         <footer></footer>
     `;
@@ -74,27 +78,25 @@ window.addEventListener("load", () => {
   render(root, store);
   let roverSelect = document.getElementById("rover");
   let cameraSelect = document.getElementById("camera");
+  let form = document.getElementById("form");
+
   roverSelect.addEventListener("change", () => {
     cameraSelect.innerHTML = store.cameras[roverSelect.value].map(
       (camera) => `<option>${camera}</option>`
     );
   });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    console.log("the form has been submitted");
+    getRoverPhoto(roverSelect.value, cameraSelect.value);
+    console.log("submit photoArr is ");
+    console.log(store.photosArr);
+    // displayPhotos();
+  });
 });
 
 // ------------------------------------------------------  COMPONENTS
-
-// Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
-const Greeting = (name) => {
-  if (name) {
-    return `
-            <h1>Welcome, ${name}!</h1>
-        `;
-  }
-
-  return `
-        <h1>Hello!</h1>
-    `;
-};
 
 // Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = (apod) => {
@@ -122,6 +124,17 @@ const ImageOfTheDay = (apod) => {
 
 // ------------------------------------------------------  API CALLS
 
+const displayPhotos = () => {
+  let displayHTML = "";
+  for (const photo of store.photosArr) {
+    displayHTML += `<img class='column' src="${photo.img_src}"></img>`;
+  }
+  let photosElement = document.getElementById("photos");
+  console.log(" displayHTML");
+  console.log(displayHTML);
+  photosElement.innerHTML = displayHTML;
+};
+
 // Example API call
 const getImageOfTheDay = (state) => {
   let { apod } = state;
@@ -132,8 +145,33 @@ const getImageOfTheDay = (state) => {
   return data;
 };
 
+const getMarsPhotos = () => {};
+
+const getCameraAbbrev = (camera) => {
+  let lookup = {
+    "Front Hazard Avoidance Camera": "FHAZ",
+    "Rear Hazard Avoidance Camera": "RHAZ",
+    "Mast Camera": "MAST",
+    "Chemistry and Camera Complex": "CHEMCAM",
+    "Mars Hand Lens Imager": "MAHLI",
+    "Mars Descent Imager": "MARDI",
+    "Navigation Camera": "NAVCAM",
+    "Panoramic Camera": "PANCAM",
+    "Miniature Thermal Emission Spectrometer (Mini-TES)": "MINITES",
+  };
+  return lookup[camera];
+};
+
 const getRoverPhoto = (rover, camera) => {
-  fetch(`http://localhost:3000/mrp/${rover}/${camera}`)
+  console.log(
+    "fetch url ",
+    `http://localhost:3000/mrp/${rover}/${getCameraAbbrev(camera)}`
+  );
+  fetch(`http://localhost:3000/mrp/${rover}/${getCameraAbbrev(camera)}`)
     .then((res) => res.json())
-    .then((apod) => updateStore(store, { apod }));
+    .then((photos) => {
+      // console.log("photos ", photos.image.photos);
+      let photosArr = photos.image.photos;
+      updateStore(store, { photosArr });
+    });
 };
