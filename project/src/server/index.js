@@ -18,9 +18,26 @@ app.use("/", express.static(path.join(__dirname, "../public")));
 app.get("/apod", async (req, res) => {
   try {
     let image = await fetch(
-      `https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
+      // `https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
+      `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ image });
+    // console.log("app.get image  ", image);
+    // console.log();
+  } catch (err) {
+    console.log("error:", err);
+  }
+});
+
+app.get("/mrp/:rover/:camera", async (req, res) => {
+  try {
+    // let image = await fetch(
+    //   // `https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
+    //   `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=${process.env.API_KEY}`
+    // ).then((res) => res.json());
+    // res.send({ image });
+    console.log("req.params  ", req.params);
+    // console.log();
   } catch (err) {
     console.log("error:", err);
   }

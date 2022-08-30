@@ -2,6 +2,31 @@ let store = {
   user: { name: "Student" },
   apod: "",
   rovers: ["Curiosity", "Opportunity", "Spirit"],
+  cameras: {
+    Curiosity: [
+      "Front Hazard Avoidance Camera",
+      "Rear Hazard Avoidance Camera",
+      "Mast Camera",
+      "Chemistry and Camera Complex",
+      "Mars Hand Lens Imager",
+      "Mars Descent Imager",
+      "Navigation Camera",
+    ],
+    Opportunity: [
+      "Front Hazard Avoidance Camera",
+      "Rear Hazard Avoidance Camera",
+      "Navigation Camera",
+      "Panoramic Camera",
+      "Miniature Thermal Emission Spectrometer (Mini-TES)",
+    ],
+    Spirit: [
+      "Front Hazard Avoidance Camera",
+      "Rear Hazard Avoidance Camera",
+      "Navigation Camera",
+      "Panoramic Camera",
+      "Miniature Thermal Emission Spectrometer (Mini-TES)",
+    ],
+  },
 };
 
 // add our markup to the page
@@ -13,55 +38,32 @@ const updateStore = (store, newState) => {
 };
 
 const render = async (root, state) => {
-  console.log("state is ", state);
   root.innerHTML = App(state);
 };
 
 // create content
 const App = (state) => {
   let { rovers, apod } = state;
-
-  // return `
-  //     <header></header>
-  //     <main>
-  //         ${Greeting(store.user.name)}
-  //         <section>
-  //             <h3>Put things on the page!</h3>
-  //             <p>Here is an example section.</p>
-  //             <p>
-  //                 One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-  //                 the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-  //                 This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-  //                 applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-  //                 explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-  //                 but generally help with discoverability of relevant imagery.
-  //             </p>
-  //             ${ImageOfTheDay(apod)}
-  //         </section>
-  //     </main>
-  //     <footer></footer>
-  // `
   return `
         <header></header>
         <main>
-            <select>
-                <option>Front Hazard Avoidance Camera</option>
-                <option>Navigation Camera</option>
-                <option>Rear Hazard Avoidance Camera</option>
-            </select>
-            <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
-                ${ImageOfTheDay(apod)}
-            </section>
+          <div>
+            <form id="form">
+              Rover: <select id="rover">
+                ${store.rovers.map((rover) => `<option>${rover}</option>`)}
+              </select>
+              Cameras: <select id="camera">
+                ${store.cameras[store.rovers[0]].map(
+                  (rover) => `<option>${rover}</option>`
+                )}
+              </select>
+              <input type="submit" value="Submit"> 
+            </form>
+          </div>
+          <section>
+              ${getRoverPhoto("Curiosity", "fhac")}
+          </section>
+
         </main>
         <footer></footer>
     `;
@@ -70,6 +72,13 @@ const App = (state) => {
 // listening for load event because page should load before any JS is called
 window.addEventListener("load", () => {
   render(root, store);
+  let roverSelect = document.getElementById("rover");
+  let cameraSelect = document.getElementById("camera");
+  roverSelect.addEventListener("change", () => {
+    cameraSelect.innerHTML = store.cameras[roverSelect.value].map(
+      (camera) => `<option>${camera}</option>`
+    );
+  });
 });
 
 // ------------------------------------------------------  COMPONENTS
@@ -121,4 +130,10 @@ const getImageOfTheDay = (state) => {
     .then((apod) => updateStore(store, { apod }));
 
   return data;
+};
+
+const getRoverPhoto = (rover, camera) => {
+  fetch(`http://localhost:3000/mrp/${rover}/${camera}`)
+    .then((res) => res.json())
+    .then((apod) => updateStore(store, { apod }));
 };
