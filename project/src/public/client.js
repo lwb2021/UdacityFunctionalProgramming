@@ -2,6 +2,7 @@ let store = {
   user: { name: "Student" },
   apod: "",
   photosArr: [],
+  firstLoad: true,
   rovers: ["Curiosity", "Opportunity", "Spirit"],
   cameras: {
     Curiosity: [
@@ -32,6 +33,7 @@ let store = {
 
 // add our markup to the page
 const root = document.getElementById("root");
+const controlPanel = document.getElementById("controlPanel");
 
 const updateStore = (store, newState) => {
   console.log("new state is ");
@@ -44,38 +46,51 @@ const updateStore = (store, newState) => {
 
 const render = async (root, state) => {
   root.innerHTML = App(state);
-  displayPhotos();
+  console.log(" root html ");
+  console.log(root.innerHTML);
+};
+
+const getControlPanel = () => {
+  return `            
+          <form id="form" > 
+            <label>Rover</label>
+            <select id="rover" name="rover" class="form-select form-select-style">
+              ${store.rovers
+                .map((rover) => `<option>${rover}</option>`)
+                .join("")}
+            </select> 
+            <label>Camera</label>
+            <select id="camera" name="camera" class="form-select form-select-style">
+              ${store.cameras[store.rovers[0]]
+                .map((rover) => `<option>${rover}</option>`)
+                .join("")}
+            </select>
+            <button type="submit">Submit</button> 
+          </form>
+        `;
 };
 
 // create content
 const App = (state) => {
-  let { rovers, apod } = state;
+  // let { rovers, apod } = state;
+  console.log("app state");
+  console.log(state);
+  console.log("app store");
+  console.log(store);
   return `
-        <header></header>
-        <main>
-          <div>
-            <form id="form">
-              Rover: <select id="rover">
-                ${store.rovers.map((rover) => `<option>${rover}</option>`)}
-              </select>
-              Cameras: <select id="camera">
-                ${store.cameras[store.rovers[0]].map(
-                  (rover) => `<option>${rover}</option>`
-                )}
-              </select>
-              <input type="submit" value="Submit"> 
-            </form>
-          </div>
-          <div id="photos">
-          </div>
-        </main>
-        <footer></footer>
-    `;
+    ${
+      state.photosArr.length == 0
+        ? displayBlank()
+        : displayPhotos(state.photosArr)
+    }
+  `;
 };
 
 // listening for load event because page should load before any JS is called
 window.addEventListener("load", () => {
+  controlPanel.innerHTML = getControlPanel();
   render(root, store);
+
   let roverSelect = document.getElementById("rover");
   let cameraSelect = document.getElementById("camera");
   let form = document.getElementById("form");
@@ -92,18 +107,15 @@ window.addEventListener("load", () => {
     getRoverPhoto(roverSelect.value, cameraSelect.value);
     console.log("submit photoArr is ");
     console.log(store.photosArr);
-    // displayPhotos();
   });
 });
 
-// ------------------------------------------------------  COMPONENTS
-
-// Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = (apod) => {
   // If image does not already exist, or it is not from today -- request it again
   const today = new Date();
   const photodate = new Date(apod.date);
   if (!apod || apod.date === today.getDate()) {
+    console.log(" apod.image   ", store);
     getImageOfTheDay(store);
   }
 
@@ -116,23 +128,33 @@ const ImageOfTheDay = (apod) => {
         `;
   } else {
     return `
-            <img src="${apod.image.url}" height="350px" width="100%" />
+            <h1>Astronomy Picture of the Day</h1>
+            <img src="${apod.image.url}" />
             <p>${apod.image.explanation}</p>
         `;
   }
 };
 
-// ------------------------------------------------------  API CALLS
-
-const displayPhotos = () => {
-  let displayHTML = "";
-  for (const photo of store.photosArr) {
-    displayHTML += `<img class='column' src="${photo.img_src}"></img>`;
+const displayBlank = () => {
+  if (store.firstLoad) {
+    return ImageOfTheDay(store.apod);
+  } else {
+    return "<h1>Oops, no photo was found for this choice.</h1>";
   }
-  let photosElement = document.getElementById("photos");
-  console.log(" displayHTML");
-  console.log(displayHTML);
-  photosElement.innerHTML = displayHTML;
+};
+
+const displayPhotos = (photosArr) => {
+  // let galleryElement = document.getElementById("gallery");
+  // let imgElem = document.createElement("img");
+  let displayHTML = "";
+  for (const photo of photosArr) {
+    // imgElem.setAttribute("class", "column");
+    // imgElem.setAttribute("src", photo.img_src);
+    // galleryElement.appendChild(imgElem);
+    displayHTML += `<img src="${photo.img_src}" class="column"></img>`;
+  }
+
+  return displayHTML;
 };
 
 // Example API call
@@ -141,11 +163,7 @@ const getImageOfTheDay = (state) => {
   fetch(`http://localhost:3000/apod`)
     .then((res) => res.json())
     .then((apod) => updateStore(store, { apod }));
-
-  return data;
 };
-
-const getMarsPhotos = () => {};
 
 const getCameraAbbrev = (camera) => {
   let lookup = {
@@ -170,8 +188,8 @@ const getRoverPhoto = (rover, camera) => {
   fetch(`http://localhost:3000/mrp/${rover}/${getCameraAbbrev(camera)}`)
     .then((res) => res.json())
     .then((photos) => {
-      // console.log("photos ", photos.image.photos);
+      console.log("photos ", photos.image.photos);
       let photosArr = photos.image.photos;
-      updateStore(store, { photosArr });
+      updateStore(store, { photosArr, firstLoad: false });
     });
 };
