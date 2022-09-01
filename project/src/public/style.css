@@ -1,20 +1,47 @@
 * {
-  margin: 5px;
-  font-size: 1.2rem;
+  margin: 1rem;
 }
 
-.column {
-  float: left;
-  width: 30%;
-  padding: 5px;
+#root {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+#form {
+  display: flex;
+  justify-content: center;
+}
+
+a {
+  margin-left: 0;
+}
+
+img {
+  max-width: 100%;
+  padding: 10px;
+}
+
+button {
+  margin-left: 1rem;
+}
+
+th, td {
+  border:1px solid black;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
 }
 
 .form-select-style {
-  width: 30%;
+  min-width: 20%;
   display: inline-block;
 }
 
-#id {
+.table {
   display: flex;
   justify-content: center;
 }

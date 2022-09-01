@@ -12,32 +12,23 @@ app.use(bodyParser.json());
 
 app.use("/", express.static(path.join(__dirname, "../public")));
 
-// your API calls
-
-// example API call
 app.get("/apod", async (req, res) => {
   try {
     let image = await fetch(
       `https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
-    console.log("app.get image  ", image);
-    console.log();
     res.send({ image });
   } catch (err) {
     console.log("error:", err);
   }
 });
 
+// get Mars photos
 app.get("/mrp/:rover/:camera", async (req, res) => {
-  console.log(
-    `https://api.nasa.gov/mars-photos/api/v1/rovers/${req.params.rover}/photos?sol=1000&camera=${req.params.camera}&api_key=${process.env.API_KEY}`
-  );
   try {
     let image = await fetch(
       `https://api.nasa.gov/mars-photos/api/v1/rovers/${req.params.rover}/photos?sol=1000&camera=${req.params.camera}&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
-    console.log("image is ");
-    console.log(image);
     res.send({ image });
   } catch (err) {
     console.log("error:", err);
