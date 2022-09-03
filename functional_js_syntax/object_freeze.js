@@ -9,22 +9,30 @@
 "use strict";
 
 const currentShow = {
-    title: 'Dr. Who',
-    seasons: 11,
-    currentSeason: 4
-}
+  title: "Dr. Who",
+  seasons: 11,
+  currentSeason: 4,
+};
 
 // as a const, we can do this:
-currentShow.currentSeason = 5
+currentShow.currentSeason = 5;
 
 // but if we freeze the object
 Object.freeze(currentShow);
 
-currentShow.currentSeason = 5;
+// currentShow.currentSeason = 5;
 // Throws an error and current_season remains unchanged
-
 
 // OBJECT FREEZE EXERCISE
 
 // ----------------------------------------------------------
 // Directions: Create your own object and freeze it!
+
+const car = {
+  name: "Toyota",
+  age: 5,
+  color: "red",
+};
+
+Object.freeze(car);
+car.name = "honda";
