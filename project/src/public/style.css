@@ -12,6 +12,15 @@
 #form {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.form-group {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
 }
 
 a {
@@ -37,11 +46,12 @@ th, td {
 }
 
 .form-select-style {
-  min-width: 20%;
+  width: 50%;
   display: inline-block;
 }
 
 .table {
   display: flex;
+  width: auto;
   justify-content: center;
 }

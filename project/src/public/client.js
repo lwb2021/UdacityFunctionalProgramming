@@ -1,47 +1,49 @@
-let opportunityCameraList = Immutable.List([
+const opportunityCameraList = [
   "Front Hazard Avoidance Camera",
   "Rear Hazard Avoidance Camera",
   "Navigation Camera",
   "Panoramic Camera",
   "Miniature Thermal Emission Spectrometer (Mini-TES)",
-]);
+];
 
-let curiosityCameraList = opportunityCameraList
-  .pop()
-  .pop()
-  .push("Mast Camera")
-  .push("Chemistry and Camera Complex")
-  .push("Mars Hand Lens Imager")
-  .push("Mars Descent Imager");
+const curiosityCameraList = [
+  "Front Hazard Avoidance Camera",
+  "Rear Hazard Avoidance Camera",
+  "Navigation Camera",
+  "Mast Camera",
+  "Chemistry and Camera Complex",
+  "Mars Hand Lens Imager",
+  "Mars Descent Imager",
+];
 
-let store = {
+let store = Immutable.Map({
   apod: "",
-  photosArr: [],
+  photosArr: Immutable.List([]),
   firstLoad: true,
-  rovers: ["Curiosity", "Opportunity", "Spirit"],
-  cameras: {
-    Curiosity: curiosityCameraList.toArray(),
-    Opportunity: opportunityCameraList.toArray(),
-    Spirit: opportunityCameraList.toArray(), // Spirit has the same cameras as Opportunity
-  },
-};
+  rovers: Immutable.List(["Curiosity", "Opportunity", "Spirit"]),
+  cameras: Immutable.Map({
+    Curiosity: curiosityCameraList,
+    Opportunity: opportunityCameraList,
+    Spirit: opportunityCameraList, // Spirit has the same cameras as Opportunity
+  }),
+});
 
 const root = document.getElementById("root");
 const controlPanel = document.getElementById("controlPanel");
 
-const updateStore = (store, newState) => {
-  store = Object.assign(store, newState);
+const updateStore = (state, newState) => {
+  store = state.merge(newState);
   render(root, store);
 };
 
-const render = async (root, state) => {
-  root.innerHTML = App(state);
+const render = (root, store) => {
+  root.innerHTML = App(store);
 };
 
 const generateInfoTable = (store) => {
-  let table = document.getElementById("table");
-  let { rover, camera, img_src } = store.photosArr[0];
-  let tableHTML = `
+  const table = document.getElementById("table");
+  const { rover, camera, img_src } = store.get("photosArr").get(0);
+  const tableHTML = `
     <tr>
       <td>Rover</td>
       <td>${rover.name}</td>
@@ -64,7 +66,7 @@ const generateInfoTable = (store) => {
     </tr>
     <tr>
       <td>Most Recently Available Photo</td>
-      <td><a href="${img_src}">link</a></td>
+      <td><a target=”_blank” href="${img_src}">link</a></td>
     </tr>
   `;
   table.style.display = "flex";
@@ -73,19 +75,28 @@ const generateInfoTable = (store) => {
 
 const getControlPanel = () => {
   return `            
-          <form id="form" > 
-            <label>Rover</label>
-            <select id="rover" name="rover" class="form-select form-select-style">
-              ${store.rovers
-                .map((rover) => `<option>${rover}</option>`)
-                .join("")}
-            </select> 
-            <label>Camera</label>
-            <select id="camera" name="camera" class="form-select form-select-style">
-              ${store.cameras[store.rovers[0]]
-                .map((rover) => `<option>${rover}</option>`)
-                .join("")}
-            </select>
+          <form id="form"> 
+            <div class="form-group">
+              <label>Rover</label>
+              <select id="rover" name="rover" class="form-select form-select-style">
+                    ${store
+                      .get("rovers")
+                      .toArray()
+                      .map((rover) => `<option>${rover}</option>`)
+                      .join("")}
+              </select> 
+            </div>
+
+            <div class="form-group">
+              <label>Camera</label>
+              <select id="camera" name="camera" class="form-select form-select-style">
+                    ${store
+                      .get("cameras")
+                      .get(store.get("rovers").get(0))
+                      .map((rover) => `<option>${rover}</option>`)
+                      .join("")}
+              </select>
+            </div>
             <button type="submit">Submit</button> 
           </form>
         `;
@@ -93,12 +104,12 @@ const getControlPanel = () => {
 
 // create content
 const App = (state) => {
-  if (state.photosArr.length != 0) generateInfoTable(store);
+  if (state.get("photosArr").toArray().length != 0) generateInfoTable(store);
   return `
     ${
-      state.photosArr.length == 0
+      state.get("photosArr").toArray().length == 0
         ? displayBlank()
-        : displayPhotos(state.photosArr)
+        : displayPhotos(state.get("photosArr").toArray())
     }
   `;
 };
@@ -108,14 +119,15 @@ window.addEventListener("load", () => {
   controlPanel.innerHTML = getControlPanel();
   render(root, store);
 
-  let roverSelect = document.getElementById("rover");
-  let cameraSelect = document.getElementById("camera");
-  let form = document.getElementById("form");
+  const roverSelect = document.getElementById("rover");
+  const cameraSelect = document.getElementById("camera");
+  const form = document.getElementById("form");
 
   roverSelect.addEventListener("change", () => {
-    cameraSelect.innerHTML = store.cameras[roverSelect.value].map(
-      (camera) => `<option>${camera}</option>`
-    );
+    cameraSelect.innerHTML = store
+      .get("cameras")
+      .get(roverSelect.value)
+      .map((camera) => `<option>${camera}</option>`);
   });
 
   form.addEventListener("submit", (event) => {
@@ -152,10 +164,10 @@ const ImageOfTheDay = (apod) => {
 };
 
 const displayBlank = () => {
-  if (store.firstLoad) {
-    return ImageOfTheDay(store.apod);
+  if (store.get("firstLoad")) {
+    return ImageOfTheDay(store.get("apod"));
   } else {
-    let table = document.getElementById("table");
+    const table = document.getElementById("table");
     table.style.display = "none";
     return "<h1>Oops, no photo was found for this choice.</h1>";
   }
@@ -174,7 +186,7 @@ const getImageOfTheDay = () => {
 };
 
 const getCameraAbbrev = (camera) => {
-  let lookup = Immutable.Map({
+  const lookup = Immutable.Map({
     "Front Hazard Avoidance Camera": "FHAZ",
     "Rear Hazard Avoidance Camera": "RHAZ",
     "Mast Camera": "MAST",
@@ -192,7 +204,7 @@ const getRoverPhoto = (rover, camera) => {
   fetch(`http://localhost:3000/mrp/${rover}/${getCameraAbbrev(camera)}`)
     .then((res) => res.json())
     .then((photos) => {
-      const photosArr = photos.image.photos;
-      updateStore(store, { photosArr, firstLoad: false });
+      const photosArr = Immutable.List(photos.image.photos);
+      updateStore(store, Immutable.Map({ photosArr, firstLoad: false }));
     });
 };
