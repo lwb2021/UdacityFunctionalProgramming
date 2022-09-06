@@ -1,0 +1,57 @@
+* {
+  margin: 1rem;
+}
+
+#root {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+#form {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.form-group {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+a {
+  margin-left: 0;
+}
+
+img {
+  max-width: 100%;
+  padding: 10px;
+}
+
+button {
+  margin-left: 1rem;
+}
+
+th, td {
+  border:1px solid black;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+}
+
+.form-select-style {
+  width: 50%;
+  display: inline-block;
+}
+
+.table {
+  display: flex;
+  width: auto;
+  justify-content: center;
+}
